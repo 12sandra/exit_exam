@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airbnb Price Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.95em;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        .section-title {
+            color: #667eea;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-reset {
+            background: #ecf0f1;
+            color: #333;
+            flex: 1;
+        }
+
+        .btn-reset:hover {
+            background: #bdc3c7;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 0.85em;
+            margin-top: 3px;
+            display: none;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            display: none;
+            border-left: 4px solid #667eea;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .price-display {
+            font-size: 2em;
+            color: #667eea;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .price-range {
+            font-size: 0.95em;
+            color: #555;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 Airbnb Price Predictor</h1>
+
+        <form id="airbnbForm">
+            <!-- SECTION 1: LOCATION & TYPE -->
+            <div class="section-title">Location & Room Type</div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="neighbourhood">Neighbourhood *</label>
+                    <select id="neighbourhood" name="neighbourhood" required>
+                        <option value="">Select Neighbourhood</option>
+                        <option value="Manhattan">Manhattan</option>
+                        <option value="Brooklyn">Brooklyn</option>
+                        <option value="Queens">Queens</option>
+                        <option value="Bronx">Bronx</option>
+                        <option value="Staten Island">Staten Island</option>
+                    </select>
+                    <div class="error" id="neighbourhoodError">Please select neighbourhood</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="roomType">Room Type *</label>
+                    <select id="roomType" name="roomType" required>
+                        <option value="">Select Room Type</option>
+                        <option value="Entire Home/Apt">Entire Home/Apt</option>
+                        <option value="Private Room">Private Room</option>
+                        <option value="Shared Room">Shared Room</option>
+                        <option value="Hotel Room">Hotel Room</option>
+                    </select>
+                    <div class="error" id="roomTypeError">Please select room type</div>
+                </div>
+            </div>
+
+            <div class="form-row full">
+                <div class="form-group">
+                    <label for="zipcode">Zipcode *</label>
+                    <input type="text" id="zipcode" name="zipcode" placeholder="e.g., 10001" required>
+                    <div class="error" id="zipcodeError">Please enter zipcode</div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: PROPERTY FEATURES -->
+            <div class="section-title">Property Features</div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="beds">Number of Beds *</label>
+                    <input type="number" id="beds" name="beds" min="0" max="20" placeholder="1" required>
+                    <div class="error" id="bedsError">Enter 0-20 beds</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="bedrooms">Bedrooms *</label>
+                    <input type="number" id="bedrooms" name="bedrooms" min="0" max="15" placeholder="1" required>
+                    <div class="error" id="bedroomsError">Enter 0-15 bedrooms</div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="accommodates">Guests (Max) *</label>
+                    <input type="number" id="accommodates" name="accommodates" min="1" max="30" placeholder="2" required>
+                    <div class="error" id="accommodatesError">Enter 1-30 guests</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="minimumNights">Minimum Nights *</label>
+                    <input type="number" id="minimumNights" name="minimumNights" min="1" max="365" placeholder="1" required>
+                    <div class="error" id="minimumNightsError">Enter 1-365 nights</div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: REVIEWS & RATINGS -->
+            <div class="section-title">Reviews & Ratings</div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="numberOfReviews">Total Reviews *</label>
+                    <input type="number" id="numberOfReviews" name="numberOfReviews" min="0" max="500" placeholder="0" required>
+                    <div class="error" id="numberOfReviewsError">Enter 0-500 reviews</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="reviewsPerMonth">Reviews/Month *</label>
+                    <input type="number" id="reviewsPerMonth" name="reviewsPerMonth" min="0" max="30" step="0.1" placeholder="0.0" required>
+                    <div class="error" id="reviewsPerMonthError">Enter 0-30 reviews/month</div>
+                </div>
+            </div>
+
+            <div class="form-row full">
+                <div class="form-group">
+                    <label for="reviewScoresRating">Rating (1-5) *</label>
+                    <input type="number" id="reviewScoresRating" name="reviewScoresRating" min="1" max="5" step="0.1" placeholder="4.5" required>
+                    <div class="error" id="reviewScoresRatingError">Enter 1-5 rating</div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: HOST INFORMATION -->
+            <div class="section-title">Host Information</div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="hostYear">Host Since (Year) *</label>
+                    <input type="number" id="hostYear" name="hostYear" min="2008" max="2026" placeholder="2020" required>
+                    <div class="error" id="hostYearError">Enter 2008-2026</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="hostMonth">Month *</label>
+                    <select id="hostMonth" name="hostMonth" required>
+                        <option value="">Select Month</option>
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                    <div class="error" id="hostMonthError">Please select month</div>
+                </div>
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="button-group">
+                <button type="submit" class="btn-submit">🔮 Predict Price</button>
+                <button type="reset" class="btn-reset">🔄 Clear</button>
+            </div>
+        </form>
+
+        <!-- RESULTS -->
+        <div class="result" id="resultBox">
+            <h2>Predicted Price</h2>
+            <div class="price-display" id="predictedPrice">$0.00</div>
+            <div class="price-range">
+                <p><strong>Price Range:</strong></p>
+                <p>Minimum: <span id="minPrice">$0.00</span></p>
+                <p>Maximum: <span id="maxPrice">$0.00</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('airbnbForm');
+        const resultBox = document.getElementById('resultBox');
+
+        // Form validation and submission
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Clear errors
+            document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
+            
+            // Validate form
+            if (!validateForm()) {
+                return;
+            }
+
+            // Collect form data
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+
+            console.log('Sending data:', data);
+
+            try {
+                // Send to backend
+                const response = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Display results
+                    const price = result.prediction.price;
+                    const min = result.prediction.priceRange.min;
+                    const max = result.prediction.priceRange.max;
+
+                    document.getElementById('predictedPrice').textContent = '$' + price.toFixed(2);
+                    document.getElementById('minPrice').textContent = '$' + min.toFixed(2);
+                    document.getElementById('maxPrice').textContent = '$' + max.toFixed(2);
+                    
+                    resultBox.classList.add('show');
+                } else {
+                    alert('Error: ' + result.error + '\n' + result.details.join('\n'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+
+        function validateForm() {
+            let isValid = true;
+
+            // Neighbourhood
+            if (!document.getElementById('neighbourhood').value) {
+                showError('neighbourhoodError');
+                isValid = false;
+            }
+
+            // Room Type
+            if (!document.getElementById('roomType').value) {
+                showError('roomTypeError');
+                isValid = false;
+            }
+
+            // Zipcode
+            if (!document.getElementById('zipcode').value) {
+                showError('zipcodeError');
+                isValid = false;
+            }
+
+            // Beds
+            const beds = document.getElementById('beds').value;
+            if (beds === '' || beds < 0 || beds > 20) {
+                showError('bedsError');
+                isValid = false;
+            }
+
+            // Bedrooms
+            const bedrooms = document.getElementById('bedrooms').value;
+            if (bedrooms === '' || bedrooms < 0 || bedrooms > 15) {
+                showError('bedroomsError');
+                isValid = false;
+            }
+
+            // Accommodates
+            const accommodates = document.getElementById('accommodates').value;
+            if (accommodates === '' || accommodates < 1 || accommodates > 30) {
+                showError('accommodatesError');
+                isValid = false;
+            }
+
+            // Minimum Nights
+            const minimumNights = document.getElementById('minimumNights').value;
+            if (minimumNights === '' || minimumNights < 1 || minimumNights > 365) {
+                showError('minimumNightsError');
+                isValid = false;
+            }
+
+            // Number of Reviews
+            const numberOfReviews = document.getElementById('numberOfReviews').value;
+            if (numberOfReviews === '' || numberOfReviews < 0 || numberOfReviews > 500) {
+                showError('numberOfReviewsError');
+                isValid = false;
+            }
+
+            // Reviews per Month
+            const reviewsPerMonth = document.getElementById('reviewsPerMonth').value;
+            if (reviewsPerMonth === '' || reviewsPerMonth < 0 || reviewsPerMonth > 30) {
+                showError('reviewsPerMonthError');
+                isValid = false;
+            }
+
+            // Review Scores Rating
+            const reviewScoresRating = document.getElementById('reviewScoresRating').value;
+            if (reviewScoresRating === '' || reviewScoresRating < 1 || reviewScoresRating > 5) {
+                showError('reviewScoresRatingError');
+                isValid = false;
+            }
+
+            // Host Year
+            const hostYear = document.getElementById('hostYear').value;
+            if (hostYear === '' || hostYear < 2008 || hostYear > 2026) {
+                showError('hostYearError');
+                isValid = false;
+            }
+
+            // Host Month
+            if (!document.getElementById('hostMonth').value) {
+                showError('hostMonthError');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function showError(elementId) {
+            document.getElementById(elementId).style.display = 'block';
+        }
+
+        // Reset form
+        document.querySelector('.btn-reset').addEventListener('click', function() {
+            resultBox.classList.remove('show');
+        });
+    </script>
+</body>
+</html>
